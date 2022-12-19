@@ -1,6 +1,6 @@
 /*
 ** Configuration header.
-** Copyright (C) 2005-2021 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2022 Mike Pall. See Copyright Notice in luajit.h
 */
 
 #ifndef luaconf_h
@@ -61,21 +61,12 @@
 #define LUA_LLPATH	";" LUA_LLDIR "?.lua;" LUA_LLDIR "?/init.lua"
 #define LUA_LCPATH1	";" LUA_LCDIR "?.so"
 #define LUA_LCPATH2	";" LUA_LCDIR "loadall.so"
-#define LUA_LCPATH3    ";" LUA_LCDIR "clib/?.so"
-
-#if defined(__APPLE__) || defined(__MACH__)
-#define LUA_LMLCPATH1 "./?.dylib;" LUA_LCDIR "?.dylib;"
-#define LUA_LMLCPATH2 "./lib?.dylib;" LUA_LCDIR "lib?.dylib;"
-#define LUA_LMCPATH LUA_LMLCPATH1 LUA_LMLCPATH2
-#else
-#define LUA_LMCPATH ""
-#endif
 
 #ifndef LUA_PATH_DEFAULT
 #define LUA_PATH_DEFAULT	"./?.lua" LUA_JPATH LUA_LLPATH LUA_RLPATH
 #endif
 #ifndef LUA_CPATH_DEFAULT
-#define LUA_CPATH_DEFAULT	"./?.so" LUA_LCPATH1 LUA_RCPATH LUA_LCPATH2 LUA_LCPATH3
+#define LUA_CPATH_DEFAULT	"./?.so" LUA_LCPATH1 LUA_RCPATH LUA_LCPATH2
 #endif
 #endif
 

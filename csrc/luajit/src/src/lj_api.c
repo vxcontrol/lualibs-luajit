@@ -1,6 +1,6 @@
 /*
 ** Public Lua/C API.
-** Copyright (C) 2005-2021 Mike Pall. See Copyright Notice in luajit.h
+** Copyright (C) 2005-2022 Mike Pall. See Copyright Notice in luajit.h
 **
 ** Major portions taken verbatim or adapted from the Lua interpreter.
 ** Copyright (C) 1994-2008 Lua.org, PUC-Rio. See Copyright Notice in lua.h
@@ -362,13 +362,13 @@ LUA_API int64_t lua_cdata_to_int64(lua_State *L, int idx)
 {
   TValue *o = index2adr(L, idx);
   //printf("lua_cdata_to_int64: ok after index2adr\n");
-
+  
   if (!tviscdata(o)) {
     //printf("lua_cdata_to_int64: error bad arg not TCDATA\n");
     return 0;
     lj_err_argt(L, 1, LUA_TCDATA);
   }
-  //printf("lua_cdata_to_int64: got past tviscdata(o) check\n");
+  //printf("lua_cdata_to_int64: got past tviscdata(o) check\n");  
   GCcdata *cd = cdataV(o);
   //printf("lua_cdata_to_int64: ok after cdataV\n");
 
@@ -383,14 +383,14 @@ LUA_API int64_t lua_cdata_to_int64(lua_State *L, int idx)
 
   int64_t ret = *(int64_t*)(cdataptr(cd));
 
-  //printf("lua_cdata_to_int64: ok after last thing, ret= %lld\n", ret);
+  //printf("lua_cdata_to_int64: ok after last thing, ret= %lld\n", ret);    
   return ret;
 }
 
 LUA_API int32_t lua_cdata_to_int32(lua_State *L, int idx)
 {
   TValue *o = index2adr(L, idx);
-
+  
   if (!tviscdata(o)) {
     lj_err_argt(L, 1, LUA_TCDATA);
   }
@@ -408,11 +408,11 @@ LUA_API int32_t lua_cdata_to_int32(lua_State *L, int idx)
 LUA_API uint64_t lua_cdata_to_uint64(lua_State *L, int idx)
 {
   TValue *o = index2adr(L, idx);
-
+  
   if (!tviscdata(o)) {
     lj_err_argt(L, 1, LUA_TCDATA);
   }
-
+  
   GCcdata *cd = cdataV(o);
 
   CTypeID ctypeid = cd->ctypeid;
@@ -848,7 +848,7 @@ LUA_API void lua_concat(lua_State *L, int n)
 	L->top -= n;
 	break;
       }
-      n -= (int)(L->top - top);
+      n -= (int)(L->top - (top - 2*LJ_FR2));
       L->top = top+2;
       lj_vm_call(L, top, 1+1);
       L->top -= 1+LJ_FR2;

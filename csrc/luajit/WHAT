@@ -1,4 +1,5 @@
-luajit v2.1-1085a4d5 from https://github.com/openresty/luajit2 (MIT license)
+luajit v2.1 from https://github.com/openresty/luajit2 (MIT license)
+df15b79172df3b143d68ee09271e0ea0ea188b96
 
 
 See luajit.md for how this distribution was built and modified.
