@@ -16,6 +16,8 @@ CFLAGS="$CFLAGS \
 "$MAKE" VERBOSE=1 HOST_CC="$HOST_CC" CC="$CC" clean
 "$MAKE" VERBOSE=1 HOST_CC="$HOST_CC" CC="$CC" amalg Q=" " CFLAGS="$CFLAGS"
 
+mkdir -p $bindir
+
 [ "$X0" ] || X0=$X; cp -f $X0 "$bindir/$X"
 [ "$D0" ] || D0=$D; cp -f $D0 "$bindir/$D"
 
