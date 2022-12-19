@@ -1,0 +1,122 @@
+diff --git a/csrc/luajit/src/src/Makefile b/csrc/luajit/src/src/Makefile
+index be82f06..66ec5c5 100644
+--- a/csrc/luajit/src/src/Makefile
++++ b/csrc/luajit/src/src/Makefile
+@@ -514,6 +514,7 @@ LJCORE_O= lj_assert.o lj_gc.o lj_err.o lj_char.o lj_bc.o lj_obj.o lj_buf.o \
+ 	  lj_ctype.o lj_cdata.o lj_cconv.o lj_ccall.o lj_ccallback.o \
+ 	  lj_carith.o lj_clib.o lj_cparse.o \
+ 	  lj_lib.o lj_alloc.o lib_aux.o \
++    luajit-ffi-ctypeid.o \
+ 	  $(LJLIB_O) lib_init.o lj_str_hash.o
+ 
+ ifeq (x64,$(TARGET_LJARCH))
+diff --git a/csrc/luajit/src/src/lj_api.c b/csrc/luajit/src/src/lj_api.c
+index 7c5db82..a280fd7 100644
+--- a/csrc/luajit/src/src/lj_api.c
++++ b/csrc/luajit/src/src/lj_api.c
+@@ -25,6 +25,9 @@
+ #include "lj_vm.h"
+ #include "lj_strscan.h"
+ #include "lj_strfmt.h"
++#include "lj_ctype.h"
++#include "lj_cdata.h"
++#include <stdint.h>
+ 
+ /* -- Common helper functions --------------------------------------------- */
+ 
+@@ -355,6 +358,72 @@ LUA_API lua_Number lua_tonumber(lua_State *L, int idx)
+     return 0;
+ }
+ 
++LUA_API int64_t lua_cdata_to_int64(lua_State *L, int idx)
++{
++  TValue *o = index2adr(L, idx);
++  //printf("lua_cdata_to_int64: ok after index2adr\n");
++
++  if (!tviscdata(o)) {
++    //printf("lua_cdata_to_int64: error bad arg not TCDATA\n");
++    return 0;
++    lj_err_argt(L, 1, LUA_TCDATA);
++  }
++  //printf("lua_cdata_to_int64: got past tviscdata(o) check\n");
++  GCcdata *cd = cdataV(o);
++  //printf("lua_cdata_to_int64: ok after cdataV\n");
++
++  CTypeID ctypeid = cd->ctypeid;
++  if (ctypeid != 11) {
++      //printf("lua_cdata_to_int64: error, not expected int64\n");
++
++    lj_err_argtype(L, 1, "int64");
++    //lj_err_argt(L, 1, LUA_TCDATA);
++  }
++  //printf("lua_cdata_to_int64: ok after ctypeid\n");
++
++  int64_t ret = *(int64_t*)(cdataptr(cd));
++
++  //printf("lua_cdata_to_int64: ok after last thing, ret= %lld\n", ret);
++  return ret;
++}
++
++LUA_API int32_t lua_cdata_to_int32(lua_State *L, int idx)
++{
++  TValue *o = index2adr(L, idx);
++
++  if (!tviscdata(o)) {
++    lj_err_argt(L, 1, LUA_TCDATA);
++  }
++  GCcdata *cd = cdataV(o);
++
++  CTypeID ctypeid = cd->ctypeid;
++    if (ctypeid != 9) {
++      lj_err_argtype(L, 1, "int32");
++      //lj_err_argt(L, 1, LUA_TCDATA);
++    }
++  return *(int32_t*)(cdataptr(cd));
++}
++
++
++LUA_API uint64_t lua_cdata_to_uint64(lua_State *L, int idx)
++{
++  TValue *o = index2adr(L, idx);
++
++  if (!tviscdata(o)) {
++    lj_err_argt(L, 1, LUA_TCDATA);
++  }
++
++  GCcdata *cd = cdataV(o);
++
++  CTypeID ctypeid = cd->ctypeid;
++  if (ctypeid != 12) {
++    lj_err_argtype(L, 1, "uint64");
++    //lj_err_argt(L, 1, LUA_TCDATA);
++  }
++  return *(uint64_t*)(cdataptr(cd));
++}
++
++
+ LUA_API lua_Number lua_tonumberx(lua_State *L, int idx, int *ok)
+ {
+   cTValue *o = index2adr(L, idx);
+diff --git a/csrc/luajit/src/src/lua.h b/csrc/luajit/src/src/lua.h
+index 3f631aa..bd55d36 100644
+--- a/csrc/luajit/src/src/lua.h
++++ b/csrc/luajit/src/src/lua.h
+@@ -11,7 +11,7 @@
+ 
+ #include <stdarg.h>
+ #include <stddef.h>
+-
++#include <stdint.h>
+ 
+ #include "luaconf.h"
+ 
+@@ -148,6 +148,9 @@ LUA_API int            (lua_rawequal) (lua_State *L, int idx1, int idx2);
+ LUA_API int            (lua_lessthan) (lua_State *L, int idx1, int idx2);
+ 
+ LUA_API lua_Number      (lua_tonumber) (lua_State *L, int idx);
++LUA_API int64_t         (lua_cdata_to_int64) (lua_State *L, int idx);
++LUA_API int32_t         (lua_cdata_to_int32) (lua_State *L, int idx);
++LUA_API uint64_t        (lua_cdata_to_uint64) (lua_State *L, int idx);
+ LUA_API lua_Integer     (lua_tointeger) (lua_State *L, int idx);
+ LUA_API int             (lua_toboolean) (lua_State *L, int idx);
+ LUA_API const char     *(lua_tolstring) (lua_State *L, int idx, size_t *len);
