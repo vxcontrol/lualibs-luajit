@@ -1,0 +1,10 @@
+diff --git a/csrc/luajit/src/src/ljamalg.c b/csrc/luajit/src/src/ljamalg.c
+index 7715cbe..09cb4eb 100644
+--- a/csrc/luajit/src/src/ljamalg.c
++++ b/csrc/luajit/src/src/ljamalg.c
+@@ -88,3 +88,5 @@
+ #include "lib_ffi.c"
+ #include "lib_buffer.c"
+ #include "lib_init.c"
++
++#include "luajit-ffi-ctypeid.c"

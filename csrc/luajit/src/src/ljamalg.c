@@ -88,3 +88,5 @@
 #include "lib_ffi.c"
 #include "lib_buffer.c"
 #include "lib_init.c"
+
+#include "luajit-ffi-ctypeid.c"
