@@ -1,19 +1,6 @@
-diff --git a/csrc/luajit/src/src/Makefile b/csrc/luajit/src/src/Makefile
-index be82f06..66ec5c5 100644
---- a/csrc/luajit/src/src/Makefile
-+++ b/csrc/luajit/src/src/Makefile
-@@ -514,6 +514,7 @@ LJCORE_O= lj_assert.o lj_gc.o lj_err.o lj_char.o lj_bc.o lj_obj.o lj_buf.o \
- 	  lj_ctype.o lj_cdata.o lj_cconv.o lj_ccall.o lj_ccallback.o \
- 	  lj_carith.o lj_clib.o lj_cparse.o \
- 	  lj_lib.o lj_alloc.o lib_aux.o \
-+    luajit-ffi-ctypeid.o \
- 	  $(LJLIB_O) lib_init.o lj_str_hash.o
- 
- ifeq (x64,$(TARGET_LJARCH))
-diff --git a/csrc/luajit/src/src/lj_api.c b/csrc/luajit/src/src/lj_api.c
-index 7c5db82..a280fd7 100644
---- a/csrc/luajit/src/src/lj_api.c
-+++ b/csrc/luajit/src/src/lj_api.c
+diff -ruN ../../../luajit-ref/csrc/luajit/src/src/lj_api.c src/src/lj_api.c
+--- ../../../luajit-ref/csrc/luajit/src/src/lj_api.c	2019-04-28 11:56:52.492725100 +0300
++++ src/src/lj_api.c	2019-02-25 10:06:12.994529000 +0300
 @@ -25,6 +25,9 @@
  #include "lj_vm.h"
  #include "lj_strscan.h"
@@ -24,7 +11,7 @@ index 7c5db82..a280fd7 100644
  
  /* -- Common helper functions --------------------------------------------- */
  
-@@ -355,6 +358,72 @@ LUA_API lua_Number lua_tonumber(lua_State *L, int idx)
+@@ -342,6 +345,72 @@
      return 0;
  }
  
@@ -32,13 +19,13 @@ index 7c5db82..a280fd7 100644
 +{
 +  TValue *o = index2adr(L, idx);
 +  //printf("lua_cdata_to_int64: ok after index2adr\n");
-+
++  
 +  if (!tviscdata(o)) {
 +    //printf("lua_cdata_to_int64: error bad arg not TCDATA\n");
 +    return 0;
 +    lj_err_argt(L, 1, LUA_TCDATA);
 +  }
-+  //printf("lua_cdata_to_int64: got past tviscdata(o) check\n");
++  //printf("lua_cdata_to_int64: got past tviscdata(o) check\n");  
 +  GCcdata *cd = cdataV(o);
 +  //printf("lua_cdata_to_int64: ok after cdataV\n");
 +
@@ -53,14 +40,14 @@ index 7c5db82..a280fd7 100644
 +
 +  int64_t ret = *(int64_t*)(cdataptr(cd));
 +
-+  //printf("lua_cdata_to_int64: ok after last thing, ret= %lld\n", ret);
++  //printf("lua_cdata_to_int64: ok after last thing, ret= %lld\n", ret);    
 +  return ret;
 +}
 +
 +LUA_API int32_t lua_cdata_to_int32(lua_State *L, int idx)
 +{
 +  TValue *o = index2adr(L, idx);
-+
++  
 +  if (!tviscdata(o)) {
 +    lj_err_argt(L, 1, LUA_TCDATA);
 +  }
@@ -78,11 +65,11 @@ index 7c5db82..a280fd7 100644
 +LUA_API uint64_t lua_cdata_to_uint64(lua_State *L, int idx)
 +{
 +  TValue *o = index2adr(L, idx);
-+
++  
 +  if (!tviscdata(o)) {
 +    lj_err_argt(L, 1, LUA_TCDATA);
 +  }
-+
++  
 +  GCcdata *cd = cdataV(o);
 +
 +  CTypeID ctypeid = cd->ctypeid;
@@ -97,20 +84,18 @@ index 7c5db82..a280fd7 100644
  LUA_API lua_Number lua_tonumberx(lua_State *L, int idx, int *ok)
  {
    cTValue *o = index2adr(L, idx);
-diff --git a/csrc/luajit/src/src/lua.h b/csrc/luajit/src/src/lua.h
-index 3f631aa..bd55d36 100644
---- a/csrc/luajit/src/src/lua.h
-+++ b/csrc/luajit/src/src/lua.h
-@@ -11,7 +11,7 @@
+diff -ruN ../../../luajit-ref/csrc/luajit/src/src/lua.h src/src/lua.h
+--- ../../../luajit-ref/csrc/luajit/src/src/lua.h	2019-04-28 11:56:52.512590500 +0300
++++ src/src/lua.h	2019-02-25 10:06:13.696651400 +0300
+@@ -11,6 +11,7 @@
  
  #include <stdarg.h>
  #include <stddef.h>
--
 +#include <stdint.h>
  
- #include "luaconf.h"
  
-@@ -148,6 +148,9 @@ LUA_API int            (lua_rawequal) (lua_State *L, int idx1, int idx2);
+ #include "luaconf.h"
+@@ -145,6 +146,9 @@
  LUA_API int            (lua_lessthan) (lua_State *L, int idx1, int idx2);
  
  LUA_API lua_Number      (lua_tonumber) (lua_State *L, int idx);
@@ -120,3 +105,221 @@ index 3f631aa..bd55d36 100644
  LUA_API lua_Integer     (lua_tointeger) (lua_State *L, int idx);
  LUA_API int             (lua_toboolean) (lua_State *L, int idx);
  LUA_API const char     *(lua_tolstring) (lua_State *L, int idx, size_t *len);
+diff -ruN ../../../luajit-ref/csrc/luajit/src/src/ljamalg.c src/src/ljamalg.c
+--- ../../../luajit-ref/csrc/luajit/src/src/ljamalg.c	2021-03-04 17:42:51.000000000 +0300
++++ src/src/ljamalg.c	2019-06-14 15:21:11.000000000 +0300
+@@ -86,3 +86,5 @@
+ #include "lib_jit.c"
+ #include "lib_ffi.c"
+ #include "lib_init.c"
++
++#include "luajit-ffi-ctypeid.c"
+diff -ruN ../../../luajit-ref/csrc/luajit/src/src/luaconf.h src/src/luaconf.h
+--- ../../../luajit-ref/csrc/luajit/src/src/luaconf.h	2019-04-28 11:56:52.536104100 +0300
++++ src/src/luaconf.h	2019-04-28 11:03:41.697524400 +0300
+@@ -13,7 +13,7 @@
+ #include <stddef.h>
+ 
+ /* Default path for loading Lua and C modules with require(). */
+-#if defined(_WIN32)
++#if defined(_WIN32) || defined(_WIN64)
+ /*
+ ** In Windows, any exclamation mark ('!') in the path is replaced by the
+ ** path of the directory of the executable file of the current process.
+@@ -69,7 +78,7 @@
+ #define LUA_INIT	"LUA_INIT"
+ 
+ /* Special file system characters. */
+-#if defined(_WIN32)
++#if defined(_WIN32) || defined(_WIN64)
+ #define LUA_DIRSEP	"\\"
+ #else
+ #define LUA_DIRSEP	"/"
+diff -ruN ../../../luajit-ref/csrc/luajit/src/src/luajit-ffi-ctypeid.c src/src/luajit-ffi-ctypeid.c
+--- ../../../luajit-ref/csrc/luajit/src/src/luajit-ffi-ctypeid.c	1970-01-01 03:00:00.000000000 +0300
++++ src/src/luajit-ffi-ctypeid.c	2019-02-25 10:06:13.722581400 +0300
+@@ -0,0 +1,143 @@
++#define LUA_LIB
++#include "lj_obj.h"
++
++#if LJ_HASFFI
++
++#include "lj_state.h"
++#include "lj_gc.h"
++#include "lj_err.h"
++#include "lj_tab.h"
++#include "lj_ctype.h"
++#include "lj_cconv.h"
++#include "lj_cdata.h"
++#include "lauxlib.h"
++#include <strings.h> /*memset*/
++
++/* compilers have different ideas about how to print 64-bit ints*/
++#if LUAJIT_OS==LUAJIT_OS_WINDOWS
++#define RETURN_INT64_FORMAT  "return %I64dLL"
++#define RETURN_UINT64_FORMAT "return %I64uLL"
++#else
++#if LJ_TARGET_OSX
++#define RETURN_INT64_FORMAT  "return %lldLL"
++#define RETURN_UINT64_FORMAT "return %lluLL"
++#else
++#define RETURN_INT64_FORMAT  "return %ldLL"
++#define RETURN_UINT64_FORMAT "return %luLL"
++#endif
++#endif
++
++LUA_API uint32_t
++luajit_push_cdata_int64(struct lua_State *L, int64_t n)
++{
++  int idx = lua_gettop(L);
++  /* load cdata int64 returning function onto stack */
++  char buf[128];
++  memset(&buf[0], '\0', 128);
++  snprintf(&buf[0], 127, RETURN_INT64_FORMAT, n);
++  
++  int err = luaL_loadstring(L, &buf[0]);
++  if (err != 0) {
++    return luaL_error(L, "luajit_push_cdata_int64 error: could not loadstring");
++  }
++
++  err = lua_pcall(L, 0, 1, 0);
++  if (err != 0) {
++    lua_settop(L, idx);
++    return luaL_error(L, "luajit_push_cdata_int64 error: pcall to load cdata onto stack failed.");
++  }
++  return 0;
++}
++
++
++LUA_API uint32_t
++luajit_push_cdata_uint64(struct lua_State *L, uint64_t u)
++{
++  int idx = lua_gettop(L);
++  /* load cdata int64 returning function onto stack */
++  char buf[128];
++  memset(&buf[0], '\0', 128);
++  snprintf(&buf[0], 127, RETURN_UINT64_FORMAT, u);
++  
++  int err = luaL_loadstring(L, &buf[0]);
++  if (err != 0) {
++    return luaL_error(L, "luajit_push_cdata_uint64 error: could not loadstring");
++  }
++
++  err = lua_pcall(L, 0, 1, 0);
++  if (err != 0) {
++    lua_settop(L, idx);
++    return luaL_error(L, "luajit_push_cdata_uint64 error: pcall to load cdata onto stack failed.");
++  }
++  return 0;
++}
++
++
++LUA_API uint32_t
++luajit_ctypeid(struct lua_State *L, int idxNew)
++{
++  int restoreAtEndIdx = lua_gettop(L);
++  if (restoreAtEndIdx == 0) {
++      return luaL_error(L, "luajit-ffi-ctypeid: empty stack.");
++  }
++  
++  /* convert from relative to absolute index,
++     but try to avoid changing any pseudo indexes,
++     which are large negative ints.
++  */
++  if (idxNew < 0 && (-idxNew) <= restoreAtEndIdx) {
++    //printf("luajit_ctypeid debug, top=%d, converted rel %d -> abs %d\n", lua_gettop(L), idxNew,  (restoreAtEndIdx + 1) + idxNew);
++    idxNew = (restoreAtEndIdx + 1) + idxNew;
++  }
++  
++  CTypeID ctypeid;
++  GCcdata *cd;
++
++  /* Get ref to ffi.typeof */
++  int err = luaL_loadstring(L, "return require('ffi').typeof");
++  if (err != 0) {
++    lua_settop(L, restoreAtEndIdx);
++    return luaL_error(L, "luajit-ffi-ctypeid error: could not loadstring");
++  }
++
++  err = lua_pcall(L, 0, 1, 0);
++  if (err != 0) {
++    lua_settop(L, restoreAtEndIdx);
++    return luaL_error(L, "luajit-ffi-ctypeid pcall to require ffi.typeof failed.");
++  }
++  
++  if (!lua_isfunction(L, -1)) {
++    int new_top = lua_gettop(L);
++    lua_settop(L, restoreAtEndIdx);
++    return luaL_error(L, "luajit-ffi-ctypeid: !lua_isfunction() at top of stack; new_top=%d", new_top);
++  }
++  /* Push the first argument to ffi.typeof */
++  lua_pushvalue(L, idxNew);
++  /* Call ffi.typeof() */
++
++  err = lua_pcall(L, 1, 1, 0);
++  if (err != 0) {
++    lua_settop(L, restoreAtEndIdx);
++    /*e.g. bad argument #1 to 'typeof' (C type expected, got number)*/
++    return 0; /*zero will mean we couldn't get the type b/c it wasn't a ctype*/
++  }
++  
++  /* Returned type should be LUA_TCDATA with CTID_CTYPEID */
++  if (lua_type(L, -1) != LUA_TCDATA) {
++    lua_settop(L, restoreAtEndIdx);
++    return luaL_error(L, "luajit-ffi-ctypeid call to ffi.typeof failed at lua_type(L,1) != LUA_TCDATA");
++  }
++  int newTop = lua_gettop(L);
++  TValue *o = L->base + newTop-1;
++  cd = cdataV(o);
++  
++  if (cd->ctypeid != CTID_CTYPEID) {
++    lua_settop(L, restoreAtEndIdx);
++    return luaL_error(L, "luajit-ffi-ctypeid call to ffi.typeof failed at ctypeid != CTID_CTYPEID");
++  }
++  ctypeid = *(CTypeID *)cdataptr(cd);
++  lua_settop(L, restoreAtEndIdx);
++  return ctypeid;
++}
++
++#endif
+diff -ruN ../../../luajit-ref/csrc/luajit/src/src/luajit-ffi-ctypeid.h src/src/luajit-ffi-ctypeid.h
+--- ../../../luajit-ref/csrc/luajit/src/src/luajit-ffi-ctypeid.h	1970-01-01 03:00:00.000000000 +0300
++++ src/src/luajit-ffi-ctypeid.h	2019-02-25 10:06:13.731560300 +0300
+@@ -0,0 +1,14 @@
++#ifndef _LUAJIT_FFI_CTYPEID_H
++#define _LUAJIT_FFI_CTYPEID_H
++
++#if LJ_HASFFI
++#include "lj_obj.h"
++
++/* return the ctype of the cdata at the top of the stack*/
++LUA_API uint32_t luajit_ctypeid(struct lua_State *L, int idx);
++
++LUA_API void luajit_push_cdata_int64(struct lua_State *L, int64_t n);
++LUA_API void luajit_push_cdata_uint64(struct lua_State *L, int64_t n);
++
++#endif
++#endif
+diff -ruN ../../../luajit-ref/csrc/luajit/src/src/Makefile src/src/Makefile
+--- ../../../luajit-ref/csrc/luajit/src/src/Makefile	2019-04-28 11:56:52.470928000 +0300
++++ src/src/Makefile	2019-04-28 11:41:25.680718500 +0300
+@@ -54,9 +54,9 @@
+ CCOPT_ppc=
+ CCOPT_mips=
+ #
+-#CCDEBUG=
++CCDEBUG=
+ # Uncomment the next line to generate debug information:
+-CCDEBUG= -g
++#CCDEBUG= -g
+ #
+ CCWARN= -Wall
+ # Uncomment the next line to enable more warnings:
+@@ -507,6 +507,7 @@
+ 	  lj_ctype.o lj_cdata.o lj_cconv.o lj_ccall.o lj_ccallback.o \
+ 	  lj_carith.o lj_clib.o lj_cparse.o \
+ 	  lj_lib.o lj_alloc.o lib_aux.o \
++	  luajit-ffi-ctypeid.o \
+ 	  $(LJLIB_O) lib_init.o lj_str_hash.o
+ 
+ ifeq (x64,$(TARGET_LJARCH))
