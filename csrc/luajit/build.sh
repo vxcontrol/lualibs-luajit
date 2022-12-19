@@ -13,7 +13,7 @@ CFLAGS="$CFLAGS \
 [ "$HOST_CC" ] || HOST_CC=gcc
 
 "$MAKE" clean
-"$MAKE" HOST_CC="$HOST_CC" amalg Q=" " CFLAGS="$CFLAGS"
+"$MAKE" VERBOSE=1 HOST_CC="$HOST_CC" amalg Q=" " CFLAGS="$CFLAGS"
 
 [ "$X0" ] || X0=$X; cp -f $X0 "$bindir/$X"
 [ "$D0" ] || D0=$D; cp -f $D0 "$bindir/$D"

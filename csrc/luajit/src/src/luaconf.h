@@ -13,7 +13,7 @@
 #include <stddef.h>
 
 /* Default path for loading Lua and C modules with require(). */
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 /*
 ** In Windows, any exclamation mark ('!') in the path is replaced by the
 ** path of the directory of the executable file of the current process.
@@ -61,12 +61,21 @@
 #define LUA_LLPATH	";" LUA_LLDIR "?.lua;" LUA_LLDIR "?/init.lua"
 #define LUA_LCPATH1	";" LUA_LCDIR "?.so"
 #define LUA_LCPATH2	";" LUA_LCDIR "loadall.so"
+#define LUA_LCPATH3    ";" LUA_LCDIR "clib/?.so"
+
+#if defined(__APPLE__) || defined(__MACH__)
+#define LUA_LMLCPATH1 "./?.dylib;" LUA_LCDIR "?.dylib;"
+#define LUA_LMLCPATH2 "./lib?.dylib;" LUA_LCDIR "lib?.dylib;"
+#define LUA_LMCPATH LUA_LMLCPATH1 LUA_LMLCPATH2
+#else
+#define LUA_LMCPATH ""
+#endif
 
 #ifndef LUA_PATH_DEFAULT
 #define LUA_PATH_DEFAULT	"./?.lua" LUA_JPATH LUA_LLPATH LUA_RLPATH
 #endif
 #ifndef LUA_CPATH_DEFAULT
-#define LUA_CPATH_DEFAULT	"./?.so" LUA_LCPATH1 LUA_RCPATH LUA_LCPATH2
+#define LUA_CPATH_DEFAULT	"./?.so" LUA_LCPATH1 LUA_RCPATH LUA_LCPATH2 LUA_LCPATH3
 #endif
 #endif
 
@@ -76,7 +85,7 @@
 #define LUA_INIT	"LUA_INIT"
 
 /* Special file system characters. */
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 #define LUA_DIRSEP	"\\"
 #else
 #define LUA_DIRSEP	"/"
