@@ -1,5 +1,5 @@
 export LUA_PATH_DEFAULT=".\\\\?.lua;!\\\\..\\\\..\\\\?.lua;!\\\\..\\\\..\\\\?\\\\init.lua"
 export LUA_CPATH_DEFAULT=".\\\\?.dll;!\\\\clib\\\\?.dll;!\\\\loadall.dll"
-[ `uname` = Linux ] && { export CROSS=x86_64-w64-mingw32-; export TARGET_SYS=Windows; }
+[ `uname` = Linux ] && { export CROSS=i686-w64-mingw32-; export TARGET_SYS=Windows; }
 [[ `uname` = *MINGW* ]] && { export MAKE=mingw32-make; }
-P=mingw64 HOST_CC="gcc" CFLAGS="-fPIC" LDFLAGS=-static-libgcc X=luajit.exe D=lua51.dll A=luajit.a ./build.sh
+P=mingw32 HOST_CC="gcc -m32" CFLAGS="-fPIC" LDFLAGS=-static-libgcc X=luajit.exe D=lua51.dll A=luajit.a ./build.sh
